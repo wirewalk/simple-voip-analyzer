@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
-
 static uint32_t stream_hash(uint32_t ssrc) {
     uint32_t h = ssrc;
     h = ((h >> 16) ^ h) * 0x45d9f3b;
@@ -35,6 +34,12 @@ voip_stream_t *voip_stream_find_or_create(voip_stream_table_t *table,
     ns->expected_seq = UINT16_MAX;
     ns->stats.mos = 4.5;
     clock_gettime(CLOCK_MONOTONIC, &ns->stats.first_seen);
+
+    if (table->record && table->record_dir[0]) {
+        char path[512];
+        snprintf(path, sizeof(path), "%s/%08x.raw", table->record_dir, ssrc);
+        ns->rec_file = fopen(path, "wb");
+    }
 
     ns->next = table->buckets[idx];
     table->buckets[idx] = ns;
@@ -111,6 +116,11 @@ void voip_stream_update(voip_stream_t *stream, const voip_parsed_packet_t *pkt) 
     if (plen > st->max_payload) st->max_payload = plen;
     st->avg_payload = st->avg_payload + (plen - st->avg_payload) / st->received;
 
+    stream->last_pt = pkt->rtp.payload_type;
+
+    if (stream->rec_file && pkt->payload && pkt->payload_len > 0)
+        fwrite(pkt->payload, 1, pkt->payload_len, stream->rec_file);
+
     uint32_t total = st->received + st->lost;
     st->loss_rate = total > 0 ? (st->lost * 100.0 / total) : 0.0;
 
@@ -164,9 +174,9 @@ void voip_stream_table_print(const voip_stream_table_t *table) {
         while (s) {
             char dur[16];
             voip_format_duration(&s->stats.first_seen, &now, dur, sizeof(dur));
-            printf("%08x     %-18s %-6u %-10u %5.1f %5.1f %6.2f %6u %4u %s\n",
+            printf("%08x     %-18s %-6u %-10u %5.1f %5.1f %6.2f %6u %4u %s %s\n",
                    s->ssrc,
-                   voip_codec_name(s->stats.received > 0 ? 0 : 0),
+                   voip_codec_name(s->last_pt),
                    s->stats.received,
                    s->stats.lost,
                    s->stats.loss_rate,
@@ -174,7 +184,8 @@ void voip_stream_table_print(const voip_stream_table_t *table) {
                    s->stats.mos,
                    s->stats.reordered,
                    s->stats.duplicates,
-                   dur);
+                   dur,
+                   s->rec_file ? "[REC]" : "");
             s = s->next;
         }
     }
@@ -185,6 +196,8 @@ void voip_stream_table_free(voip_stream_table_t *table) {
         voip_stream_t *s = table->buckets[i];
         while (s) {
             voip_stream_t *next = s->next;
+            if (s->rec_file)
+                fclose(s->rec_file);
             free(s);
             s = next;
         }

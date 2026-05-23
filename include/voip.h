@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -56,6 +57,8 @@ typedef struct voip_stream {
     double                  jitter;          /* Текущий джиттер (RFC 3550) */
     voip_stream_stats_t     stats;
     uint32_t                seq_bitmap[4];   /* Битовая карта последних 128 seq */
+    uint8_t                 last_pt;         /* Последний payload type */
+    FILE                   *rec_file;        /* Файл записи payload */
     struct voip_stream     *next;            /* Связный список (хэш-таблица) */
 } voip_stream_t;
 
@@ -65,6 +68,8 @@ typedef struct voip_stream {
 typedef struct {
     voip_stream_t *buckets[VOIP_STREAM_TABLE_SIZE];
     int            count;
+    int            record;          /* Флаг записи payload */
+    char           record_dir[256]; /* Каталог для файлов записи */
 } voip_stream_table_t;
 
 /* API захвата */
