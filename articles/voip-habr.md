@@ -18,7 +18,7 @@ RTP (Real-time Transport Protocol) - это то, что несёт голос �
 Запускаете с флагом `-r`, получаете .raw файл, воспроизводите через ffplay.
 Это хороший аргумент за SRTP - но об этом в следующей статье.
 
-Код проекта: [gitflic.ru/wirewalk/simple-voip-analyzer](https://gitflic.ru/wirewalk/simple-voip-analyzer)
+Код проекта: [gitflic.ru/wirewalk/simple-voip-analyzer](https://gitflic.ru/project/wirewalk/simple-voip-analyzer)
 Предыдущая статья: [DPI для любопытствующих](https://habr.com/ru/articles/в процессе модерации)
 
 *Эпиграфы к разделам - цитаты из "Алисы в Стране чудес" Льюиса Кэрролла.*
@@ -492,7 +492,7 @@ Opus кодирует тот же качество голоса в 6-8 kbps - э
 Или, если вас больше волнует безопасность - как зашифровать RTP (SRTP, AES-CM,
 ключевой обмен DTLS-SRTP) и почему это сложнее, чем "взять AES и зашифровать".
 
-Проект открыт: [gitflic.ru/wirewalk/simple-voip-analyzer](https://gitflic.ru/wirewalk/simple-voip-analyzer).
+Проект открыт: [gitflic.ru/wirewalk/simple-voip-analyzer](https://gitflic.ru/project/wirewalk/simple-voip-analyzer).
 Зеркало: [github.com/wirewalk/simple-voip-analyzer](https://github.com/wirewalk/simple-voip-analyzer).
 
 ---
